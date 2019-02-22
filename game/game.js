@@ -52,12 +52,22 @@ class game{
 
 		var allCmds = this.room.cmds.concat(this.cmds)
 
+		//look for * wildcard first
+		for(var i = 0; i < allCmds.length; i++){
+			if(allCmds[i].name === "*"){
+				var rt = allCmds[i].cmd(args,term,this)
+				if(rt) return
+			}
+		}
+
 		for(var i = 0; i < allCmds.length; i++){
 			var cmd = allCmds[i]
+			//check for synonym commands
 			var syns = cmd.name
 			if (!Array.isArray(cmd.name)){
 				syns = [cmd.name]
 			}
+
 			for (var j = 0; j < syns.length; j++){
 				if (syns[j] === command){
 					cmd.cmd(args, term, this)
@@ -89,7 +99,15 @@ rooms = {
 							term.update("...")
 							setTimeout(function (){
 								term.print("Just Kidding, You can't leave this room.")
-								g.room = rooms["room_2"]
+								g.room.cmds.unshift({
+									name: "*",
+									help: "",
+									cmd: function (args, term, g){
+										term.print("I'm just fucking around! Look around, you're already in a different room!")
+										g.room = rooms["room_2"]
+										return true					
+									},
+								})
 
 							}, 1200)
 						}, 800)
@@ -101,28 +119,49 @@ rooms = {
 	},
 	"room_2": {
 		desc: [
-		"You're in a room.",
-		"You're still in a room.",
-		"Why don't you *leave* the room?",
+		"Yep, it's definitely a different room",
+		"You think I'd give you another hint in the same way? Bad design!!",
 		],
 		tries:0,
 		cmds: [
 			{
+				//let's try a timeout function
+				name: "*",
+				help: "",
+				cmd: function (args, term, g){
+					g.room.vars.lastActionTime = new Date()
+					setTimeout(function() {
+						var now = new Date()
+						var diff = now - g.room.vars.lastActionTime
+						if(diff > 8000){
+							term.print(" ")
+							term.print("wow, you must REALLY be stumped.")
+							setTimeout(function() {
+								term.print("why don't you just *leave* the room again?")
+								g.room = rooms["room_3"]
+							}, 2000);
+						}
+					}, 9000);	
+				},
+			},
+			{
 				name: "leave",
 				help: "",
 				cmd: function (args, term, g){
-					term.print("It's not worth trying again. You can't leave")					
+					term.print("It's not worth trying again.")					
 				},
 			},
 			{
 				name: ["why", "what", "how"],
 				help: "",
 				cmd: function (args, term, g){
-					term.print("because I said so")	
-					g.room = rooms["room_3"]				
+					term.print("because I said so")				
 				},
 			},
-		]
+		],
+		vars :[
+
+		],
 	},
 	"room_3": {
 		desc: [
@@ -131,10 +170,10 @@ rooms = {
 		tries:0,
 		cmds: [
 			{
-				name: "*",
+				name: "leave",
 				help: "",
 				cmd: function (args, term, g){
-					term.print("I'm just kidding! Look around, you're already in a different room!")					
+					term.print("Haha Goteem.")					
 				},
 			},
 		]

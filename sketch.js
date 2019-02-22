@@ -6,14 +6,17 @@ function setup() {
   cnv.style('display', 'block');
 	term = new terminal(width,height)
 	g = new game()
+	//frameRate(30)
+	
+	//draw text
+	textSize(32);
 	myFont = loadFont('november.ttf');
 	textFont(myFont);
 }
 
 function draw() {
-	background(0)
-
 	term.draw()
+	//console.log(frameRate())
 }
 
 function keyTyped(){
@@ -64,6 +67,8 @@ class terminal {
 		this.blinkRate = 60
 		this.blinkState = 0
 
+		this.flashState = 0
+
 		this.cursorPos = 0
 		this.lines = ["Welcome to lk."]
 		this.input = ""
@@ -82,6 +87,7 @@ class terminal {
 	}
 	flash(){
 		console.log("flash term")
+		this.flashState = 6
 	}
 	print(text){
 		this.lines.unshift(text)
@@ -92,6 +98,13 @@ class terminal {
 	}
 
 	submit(){
+		if(this.input.match(/^\s*$/)){
+			this.flash()
+			this.input = ""
+			this.cursorPos = 0
+			return
+		}
+
 		this.lines.unshift(this.input)
 		this.input = ""
 		this.cursorPos = 0
@@ -107,9 +120,15 @@ class terminal {
 		return this.lines[0]
 	}
 	draw(){
-		//draw text
-		textSize(32);
+		background(0)
+		if(this.flashState > 0){
+			this.flashState--
+			background(30)
+		}
+
 		fill(0, 102, 153);
+
+
 		text("> " + this.input,20,height - this.lineHeight)
 		//draw blink
 		this.blinkState++
@@ -123,6 +142,7 @@ class terminal {
 
 		//draw prev lines
 		for (var i = 0; i < this.lines.length; i++){
+
 			text(this.lines[i],20,height - this.lineHeight*(i+3))
 		}
 	}
