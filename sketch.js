@@ -1,10 +1,11 @@
+var g
 
 var term
 function setup() {
 	var cnv = createCanvas(windowWidth, windowHeight);
   cnv.style('display', 'block');
 	term = new terminal(width,height)
-
+	g = new game()
 	myFont = loadFont('november.ttf');
 	textFont(myFont);
 }
@@ -16,14 +17,14 @@ function draw() {
 }
 
 function keyTyped(){
-	console.log(key)
+	if ([13].includes(keyCode)) return
 	term.input = [term.input.slice(0, term.cursorPos), key, term.input.slice(term.cursorPos)].join('');
 	term.cursorPos += 1
 }
 
 function keyPressed(){
-	term.blinkState = 0
 	console.log(keyCode)
+	term.blinkState = 0
 	if(keyCode == LEFT_ARROW) term.cursorPos = max(0,term.cursorPos - 1)
 	if(keyCode == RIGHT_ARROW) term.cursorPos = min(term.input.length,term.cursorPos + 1)
 	if(keyCode == BACKSPACE){
@@ -33,11 +34,22 @@ function keyPressed(){
 		}
 		else
 			term.flash()
+		return false
+	}
+	if (keyCode == DELETE){
+		if(term.cursorPos < term.input.length){
+			term.input = [term.input.slice(0, term.cursorPos), term.input.slice(term.cursorPos + 1)].join('');
+		}
+		else{
+			term.flash()
+		}
 	}
 	if (keyCode == ENTER){
 		term.submit()
 	}
-
+	if (keyCode == TAB){
+		return false
+	}
 }
 
 function windowResized() {
@@ -51,10 +63,16 @@ class terminal {
 		this.lineSpacing = 5
 		this.blinkRate = 60
 		this.blinkState = 0
+
 		this.cursorPos = 0
-		this.lines = ["Hello"]
+		this.lines = ["Welcome to lk."]
 		this.input = ""
+		this.newInput = false
+
 		this.resize(height, width)
+
+		this.callback = null
+
 	}
 	resize(height, width){
 		this.height = height
@@ -65,10 +83,28 @@ class terminal {
 	flash(){
 		console.log("flash term")
 	}
+	print(text){
+		this.lines.unshift(text)
+	}
+	//updates the last line
+	update(text){
+		this.lines[0] = text
+	}
+
 	submit(){
 		this.lines.unshift(this.input)
 		this.input = ""
 		this.cursorPos = 0
+		this.newInput = true
+
+		g.processCmd(this.lines[0], this)
+	}
+	getInput(){
+		while(this.newInput == false){
+
+		}
+		this.newInput = false
+		return this.lines[0]
 	}
 	draw(){
 		//draw text
@@ -91,3 +127,4 @@ class terminal {
 		}
 	}
 }
+
