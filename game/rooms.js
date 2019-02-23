@@ -117,6 +117,9 @@ rooms = {
 					g.room.vars.stringPos = 0
 					if(g.room.vars.actualInput === g.room.vars.overrideString){
 						term.print("yep")
+						term.clear()
+						term.input = ""
+						term.cursorPos = 0
 						return true
 					}
 					g.room.vars.actualInput = ""
