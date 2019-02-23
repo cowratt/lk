@@ -1,9 +1,15 @@
 var g
 
+var canvas
 var term
 function setup() {
 	var cnv = createCanvas(windowWidth, windowHeight);
-  cnv.style('display', 'block');
+  	cnv.style('display', 'block');
+
+
+  	canvas = document.getElementById("defaultCanvas0").getContext("2d")
+	
+
 	term = new terminal(width,height)
 	g = new game()
 	//frameRate(30)
@@ -12,20 +18,33 @@ function setup() {
 	textSize(32);
 	myFont = loadFont('november.ttf');
 	textFont(myFont);
-}
 
+	setTimeout(function() {canvas.font = "32px november"}, 10);
+}
+var totalTime = 0
 function draw() {
 	term.draw()
-	//console.log(frameRate())
+
+
 }
 
 function keyTyped(){
+
 	if ([13].includes(keyCode)) return
+	if(term.keyTypedControlOverride != null){
+		var rt = term.keyTypedControlOverride(key, term, g)
+		if(rt) return false
+	}
 	term.input = [term.input.slice(0, term.cursorPos), key, term.input.slice(term.cursorPos)].join('');
 	term.cursorPos += 1
+	return false
 }
 
 function keyPressed(){
+	if(term.keyPressedControlOverride != null){
+		var rt = term.keyPressedControlOverride(keyCode, term, g)
+		if(rt) return
+	}
 	console.log(keyCode)
 	term.blinkState = 0
 	if(keyCode == LEFT_ARROW) term.cursorPos = max(0,term.cursorPos - 1)
@@ -53,6 +72,7 @@ function keyPressed(){
 	if (keyCode == TAB){
 		return false
 	}
+
 }
 
 function windowResized() {
@@ -77,6 +97,9 @@ class terminal {
 		this.resize(height, width)
 
 		this.callback = null
+
+		this.keyTypedControlOverride = null
+		this.keyPressedControlOverride = null
 
 	}
 	resize(height, width){
@@ -140,11 +163,34 @@ class terminal {
 			text("|",cursorOffset,height - this.lineHeight)
 		}
 
-		//draw prev lines
+		//draw prev lines using a totally different shader method because why the fuck not
 		for (var i = 0; i < this.lines.length; i++){
 
-			text(this.lines[i],20,height - this.lineHeight*(i+3))
+			//text(this.lines[i],20,height - this.lineHeight*(i+3))
+			
+			if(typeof(this.lines[i]) !== 'string'){
+				fillMixedText(canvas, this.lines[i], 20,height - this.lineHeight*(i+3))
+			}
+			else{
+				canvas.fillText(this.lines[i],20,height - this.lineHeight*(i+3))
+			}
+			
 		}
 	}
 }
 
+
+
+const fillMixedText = (ctx, args, x, y) => {
+  let defaultFillStyle = ctx.fillStyle;
+  let defaultFont = ctx.font;
+
+  ctx.save();
+  args.forEach(({ text, fillStyle, font }) => {
+    ctx.fillStyle = fillStyle || defaultFillStyle;
+    ctx.font = font || defaultFont;
+    ctx.fillText(text, x, y);
+    x += ctx.measureText(text).width;
+  });
+  ctx.restore();
+};

@@ -1,7 +1,12 @@
+
 html, body {
   height: 100%;
+  font-family: november;
 }
-
+canvas {
+	font-family: november;
+	@font-face { font-family: november; src: url('./november.ttf'); } 
+}
 body {
   margin: 0;
   display: flex;

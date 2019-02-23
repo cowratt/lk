@@ -84,7 +84,10 @@ rooms = {
 		desc: [
 		"You're in a room.",
 		"You're still in a room.",
-		"Why don't you *leave* the room?",
+		[
+		{ text: 'Why don\'t you ' },
+  		{ text: 'leave', fillStyle: 'red' },
+  		{ text: ' the room?' },],
 		],
 		tries:0,
 		cmds: [
@@ -133,13 +136,18 @@ rooms = {
 					setTimeout(function() {
 						var now = new Date()
 						var diff = now - g.room.vars.lastActionTime
-						if(diff > 8000){
+						if(diff > 8950){
 							term.print(" ")
 							term.print("wow, you must REALLY be stumped.")
 							setTimeout(function() {
-								term.print("why don't you just *leave* the room again?")
-								g.room = rooms["room_3"]
-							}, 2000);
+								term.print("This is my game.")
+								setTimeout(function() {
+									term.print("Do you think that you have any control?")
+									g.room = rooms["room_3"]
+									g.room.initOverride(term, g)
+
+								}, 1500);
+							}, 1500);
 						}
 					}, 9000);	
 				},
@@ -149,13 +157,6 @@ rooms = {
 				help: "",
 				cmd: function (args, term, g){
 					term.print("It's not worth trying again.")					
-				},
-			},
-			{
-				name: ["why", "what", "how"],
-				help: "",
-				cmd: function (args, term, g){
-					term.print("because I said so")				
 				},
 			},
 		],
@@ -170,12 +171,48 @@ rooms = {
 		tries:0,
 		cmds: [
 			{
+				name: "*",
+				help: "",
+				cmd: function (args, term, g){
+					term.print("Thought so.")
+					return true					
+				},
+			},
+			{
 				name: "leave",
 				help: "",
 				cmd: function (args, term, g){
 					term.print("Haha Goteem.")					
 				},
 			},
-		]
+		],
+		vars: [],
+		initOverride: function(term,g){
+			g.room.vars.stringPos = 0
+			g.room.vars.actualInput = ''
+			g.room.vars.overrideString = "no I don't"
+			term.keyTypedControlOverride = function(keyCode, term,g) {
+				if(g.room.vars.stringPos < g.room.vars.overrideString.length){
+					term.input += g.room.vars.overrideString[g.room.vars.stringPos]
+					term.cursorPos++
+					g.room.vars.stringPos++
+					g.room.vars.actualInput += keyCode
+				}
+				return true
+			}
+			term.keyPressedControlOverride = function(keyCode, term,g) {
+				if(keyCode == BACKSPACE) g.room.vars.stringPos = max(g.room.vars.stringPos - 1, 0)
+				if(keyCode == ENTER){
+					console.log(g.room.vars.actualInput)
+					g.room.vars.stringPos = 0
+					if(g.room.vars.actualInput === g.room.vars.overrideString){
+						term.print("yep")
+						return true
+					}
+					g.room.vars.actualInput = ""
+				} 
+				return false
+			}
+		}
 	},
 }
