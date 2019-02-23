@@ -113,6 +113,7 @@ class terminal {
 		this.flashState = 6
 	}
 	print(text){
+		if(text === "") return
 		this.lines.unshift(text)
 	}
 	//updates the last line
