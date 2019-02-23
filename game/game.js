@@ -14,8 +14,15 @@ class game{
 					var stopwords = ["at", "in"]
 					// "lk"
 					if(args.length === 0){
-						desc = g.room.desc[min(g.room.desc.length - 1, g.room.tries)]
-						g.room.tries++
+						if(g.room.tries == null) g.room.tries = 0
+						if(Array.isArray(g.room.desc)){
+							desc = g.room.desc[min(g.room.desc.length - 1, g.room.tries)]
+							g.room.tries++
+						}
+						else{
+							desc = g.room.desc
+						}
+						
 					}
 					//"look at rock" / "lk rock"
 					else{
@@ -32,8 +39,14 @@ class game{
 								for (var j = 0; j < syns.length; j++){
 									console.log(syns[j], args[selectedArg])
 									if (syns[j] === args[selectedArg]){
-										
-										desc = obj.desc
+										if(obj.tries == null) obj.tries = 0
+										if(Array.isArray(obj.desc)){
+											desc = obj.desc[min(obj.desc.length - 1, obj.tries)]
+											obj.tries++
+										}
+										else{
+											desc = obj.desc
+										}
 									}
 								}
 							}
@@ -64,9 +77,15 @@ class game{
 				name: "cls",
 				help: "clear console",
 				cmd: function (args, term, g){
-					term.lines = []
+					term.clear()
 				},
 			},
+			{
+				name: "echo",
+				cmd: function(args, term, g){
+					term.print(args.join(" "))
+				}
+			}
 		]
 		
 	}

@@ -90,7 +90,7 @@ class terminal {
 		this.flashState = 0
 
 		this.cursorPos = 0
-		this.lines = ["Welcome to lk."]
+		this.lines = []
 		this.input = ""
 		this.newInput = false
 
@@ -100,6 +100,7 @@ class terminal {
 
 		this.keyTypedControlOverride = null
 		this.keyPressedControlOverride = null
+		this.print("Welcome to lk.")
 
 	}
 	resize(height, width){
@@ -112,9 +113,60 @@ class terminal {
 		console.log("flash term")
 		this.flashState = 6
 	}
+	clear(){
+		this.lines = []
+	}
 	print(text){
 		if(text === "") return
-		this.lines.unshift(text)
+		/* this will convert text to rich/colored/italic text
+		text = standard white console text
+		*text* = red/highlighted text
+		^text^ = green/other person text
+		(text) = blue/player text
+		_text_ = italic text
+		*/
+		var checker = [
+			{
+				tag: "*",
+				style: {
+					fillStyle: 'red'
+				},
+				enabled: false,
+			},
+			{
+				tag: "^",
+				style: {
+					fillStyle: 'green'
+				},
+				enabled: false,
+			},
+		]
+		var last = 0
+		var outputText = []
+		for(var i = 0; i < text.length; i++){
+
+			for(var j = 0; j < checker.length; j++){
+				
+				if(text[i] === checker[j].tag){
+
+					var temp = {}
+					temp.text = text.substring(last,i)
+					last = i+1
+					if(checker[j].enabled){
+						temp = Object.assign(temp,checker[j].style)
+					}
+					checker[j].enabled = !checker[j].enabled
+					outputText.push(temp)
+				}
+			}
+		}
+		if(last < text.length-1){
+			var temp = {}
+			temp.text = text.substring(last,text.length)
+			outputText.push(temp)
+		}
+		console.log(outputText)
+		this.lines.unshift(outputText)
 	}
 	//updates the last line
 	update(text){
@@ -150,7 +202,7 @@ class terminal {
 			background(30)
 		}
 
-		fill(0, 102, 153);
+		fill(60, 102, 200);
 
 
 		text("> " + this.input,20,height - this.lineHeight)
@@ -183,7 +235,7 @@ class terminal {
 
 
 const fillMixedText = (ctx, args, x, y) => {
-  let defaultFillStyle = ctx.fillStyle;
+  let defaultFillStyle = "gray";
   let defaultFont = ctx.font;
 
   ctx.save();

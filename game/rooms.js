@@ -3,10 +3,7 @@ rooms = {
 		desc: [
 		"You're in a room.",
 		"You're still in a room.",
-		[
-		{ text: 'Why don\'t you ' },
-  		{ text: 'leave', fillStyle: 'red' },
-  		{ text: ' the room?' },],
+		"Why don't you *leave* the room?",
 		],
 		tries:0,
 		cmds: [
@@ -131,8 +128,9 @@ rooms = {
 	"room_4": {
 		desc: [
 		"You are in a meadow. There is a cliff above you",
+		"There are also some rocks on the ground."
 		],
-		tries:0,
+
 		cmds: [
 			{
 				//let's try a timeout function
@@ -145,7 +143,9 @@ rooms = {
 		objs:[
 			{
 				name: "cliff",
-				desc: "it's a cliff."
+				desc: [
+				"it's a cliff. Is that a girl up there?",
+				],
 			},
 			{
 				name: ["rocks", "rock"],
@@ -154,6 +154,7 @@ rooms = {
 			{
 				name: ["girl"],
 				desc: function(args,term,g){
+					term.clear()
 					console.log("play animation")
 					return ""
 				}
