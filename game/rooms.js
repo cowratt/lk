@@ -52,7 +52,7 @@ rooms = {
 					setTimeout(function() {
 						var now = new Date()
 						var diff = now - g.room.vars.lastActionTime
-						if(diff > 8950){
+						if(diff > 6450){
 							term.print(" ")
 							term.print("wow, you must REALLY be stumped.")
 							setTimeout(function() {
@@ -65,7 +65,7 @@ rooms = {
 								}, 1500);
 							}, 1500);
 						}
-					}, 9000);	
+					}, 6500);	
 				},
 			},
 			{
@@ -100,7 +100,7 @@ rooms = {
 		initOverride: function(term,g){
 			g.room.vars.stringPos = 0
 			g.room.vars.actualInput = ''
-			g.room.vars.overrideString = "no I don't"
+			g.room.vars.overrideString = "No I don't"
 			term.keyTypedControlOverride = function(keyCode, term,g) {
 				if(g.room.vars.stringPos < g.room.vars.overrideString.length){
 					term.input += g.room.vars.overrideString[g.room.vars.stringPos]
@@ -111,15 +111,22 @@ rooms = {
 				return true
 			}
 			term.keyPressedControlOverride = function(keyCode, term,g) {
-				if(keyCode == BACKSPACE) g.room.vars.stringPos = max(g.room.vars.stringPos - 1, 0)
+				if(keyCode == BACKSPACE){
+					g.room.vars.stringPos = max(g.room.vars.stringPos - 1, 0)
+					g.room.vars.actualInput = g.room.vars.actualInput.slice(0,g.room.vars.actualInput.length - 1)
+				} 
 				if(keyCode == ENTER){
 					console.log(g.room.vars.actualInput)
 					g.room.vars.stringPos = 0
-					if(g.room.vars.actualInput === g.room.vars.overrideString){
-						term.print("yep")
+					if(g.room.vars.actualInput.toLowerCase().replace(/\W/,"") === g.room.vars.overrideString.toLowerCase().replace(/\W/,"") ){
+						
 						term.clear()
 						term.input = ""
 						term.cursorPos = 0
+						term.keyPressedControlOverride = null
+						term.keyTypedControlOverride = null
+						g.room = rooms["room_4"]
+						term.print("^Good Job, you made it past the tutorial^")
 						return true
 					}
 					g.room.vars.actualInput = ""
@@ -152,13 +159,17 @@ rooms = {
 			},
 			{
 				name: ["rocks", "rock"],
-				desc: "Why the fuck would you look at rocks?"
+				desc: ["Why the fuck would you look at rocks?", 
+				function (){
+					return "wait shit"
+				}, "good job"],
 			},
 			{
 				name: ["girl"],
 				desc: function(args,term,g){
 					term.clear()
 					console.log("play animation")
+					g.room = rooms["room_cliff"]
 					return ""
 				}
 			}
@@ -166,5 +177,21 @@ rooms = {
 		vars :[
 
 		],
+	},
+	"room_cliff": {
+		desc: [
+		"cliff",
+		],
+
+		cmds: [],
+		vars :[
+
+		],
+		setup: function(){
+
+		},
+		draw: function(){
+
+		},
 	},
 }

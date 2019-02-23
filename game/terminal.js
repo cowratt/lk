@@ -2,6 +2,11 @@ var g
 
 var canvas
 var term
+
+var cliff
+
+
+
 function setup() {
 	var cnv = createCanvas(windowWidth, windowHeight);
   	cnv.style('display', 'block');
@@ -9,6 +14,7 @@ function setup() {
 
   	canvas = document.getElementById("defaultCanvas0").getContext("2d")
 	
+	cliff = loadImage('game/sprites/cliff.png')
 
 	term = new terminal(width,height)
 	g = new game()
@@ -19,10 +25,14 @@ function setup() {
 	myFont = loadFont('november.ttf');
 	textFont(myFont);
 
-	setTimeout(function() {canvas.font = "32px november"}, 10);
+	canvas.font = "32px november"
 }
 var totalTime = 0
 function draw() {
+	if(term.drawOverride != null){
+		rt = term.drawOverride()
+		if(rt) return
+	}
 	term.draw()
 
 
@@ -49,6 +59,17 @@ function keyPressed(){
 	term.blinkState = 0
 	if(keyCode == LEFT_ARROW) term.cursorPos = max(0,term.cursorPos - 1)
 	if(keyCode == RIGHT_ARROW) term.cursorPos = min(term.input.length,term.cursorPos + 1)
+
+	if(keyCode == UP_ARROW){
+		console.log(term.lastCommandsPos, term.lastCommands.length)
+		if(term.lastCommandsPos > term.lastCommands.length || term.lastCommands.length == 0){
+			term.flash()
+			return
+		}
+		term.input = term.lastCommands[term.lastCommandsPos]
+		term.cursorPos = term.input.length
+		term.lastCommandsPos = min(term.lastCommandsPos + 1, term.lastCommands.length - 1)
+	}
 	if(keyCode == BACKSPACE){
 		if(term.cursorPos != 0){
 			term.input = [term.input.slice(0, term.cursorPos - 1), term.input.slice(term.cursorPos)].join('');
@@ -91,18 +112,44 @@ class terminal {
 
 		this.cursorPos = 0
 		this.lines = []
+		this.lastCommands = []
+		this.lastCommandsPos = 0
 		this.input = ""
 		this.newInput = false
 
 		this.resize(height, width)
 
 		this.callback = null
+		this.drawOverride = null
 
 		this.keyTypedControlOverride = null
 		this.keyPressedControlOverride = null
 		this.print("Welcome to lk.")
 
 	}
+	//keyboard inputs
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	resize(height, width){
 		this.height = height
 		this.width = width
@@ -174,6 +221,12 @@ class terminal {
 	}
 
 	submit(){
+		//push to last commands
+		if(this.lastCommands !== this.input){
+			this.lastCommands.unshift(this.input)
+		}
+		console.log(this.lastCommands, this.lastCommandsPos)
+		this.lastCommandsPos = 0
 		if(this.input.match(/^\s*$/)){
 			this.flash()
 			this.input = ""
