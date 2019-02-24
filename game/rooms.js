@@ -11,7 +11,7 @@ rooms = {
 				name: "leave",
 				help: "",
 				cmd: function (args, term, g){
-					term.print(".")
+					term.print(". ")
 					setTimeout(function (){
 						term.update("..")
 						setTimeout(function (){
@@ -160,8 +160,17 @@ rooms = {
 			{
 				name: ["rocks", "rock"],
 				desc: ["Why the fuck would you look at rocks?", 
-				function (){
-					return "wait shit"
+				function (args,term,g){
+					term.print("wait, actually there's a ^coin^ in there. You take it.")
+					g.addToInventory({
+						name:"coin",
+						title: "a coin",
+						desc:"It's a small lumpy coin",
+						use: function(args,term,g){
+							term.print("you wave the coin around in the air, but not much seems to happen.")
+						}
+					}, term)
+					
 				}, "good job"],
 			},
 			{

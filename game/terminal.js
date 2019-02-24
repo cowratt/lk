@@ -24,8 +24,8 @@ function setup() {
 	textSize(32);
 	myFont = loadFont('november.ttf');
 	textFont(myFont);
-
-	canvas.font = "32px november"
+	setTimeout(function() {canvas.font = "32px november"}, 10);
+	
 }
 var totalTime = 0
 function draw() {
@@ -217,7 +217,8 @@ class terminal {
 	}
 	//updates the last line
 	update(text){
-		this.lines[0] = text
+		this.lines = this.lines.slice(1,this.lines.length)
+		this.print(text)
 	}
 
 	submit(){

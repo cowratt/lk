@@ -1,19 +1,21 @@
 class game{
 
 	constructor(){
-		this.room = rooms["room_1"]
+		this.room = rooms["room_4"]
 		this.player = {
 			name: "",
+			inventory: [],
 		}
 		this.cmds = [
 			{
-				name: ["lk", "look"],
+				name: ["lk", "look", "examine"],
 				help: "look around",
 				cmd: function (args, term, g){
 					var desc
 					var stopwords = ["at", "in"]
+					var generics = ["around", "room"]
 					// "lk"
-					if(args.length === 0){
+					if(args.length === 0 || generics.includes(args[0])){
 						if(g.room.tries == null) g.room.tries = 0
 						if(Array.isArray(g.room.desc)){
 							desc = g.room.desc[min(g.room.desc.length - 1, g.room.tries)]
@@ -27,9 +29,11 @@ class game{
 					//"look at rock" / "lk rock"
 					else{
 						var selectedArg = 0
+						var thingsToLookAt = g.room.objs.concat(g.player.inventory)
+						console.log(thingsToLookAt)
 						while(selectedArg < args.length && desc == null){
-							for (var i = 0; i < g.room.objs.length; i++){
-								var obj = g.room.objs[i]
+							for (var i = 0; i < thingsToLookAt.length; i++){
+								var obj = thingsToLookAt[i]
 								//check for synonym commands
 								var syns = obj.name
 								if (!Array.isArray(obj.name)){
@@ -62,12 +66,31 @@ class game{
 				},
 			},
 			{
+				name: ["inventory", "inv", "items", "i"],
+				help: "what you've got",
+				cmd: function(args,term,g){
+					if(g.player.inventory != null){
+						var items = "You have " + g.player.inventory[0].title
+						for(var i = 1; i < g.player.inventory.length; i++){
+							items = items + ", " + g.player.inventory[i]
+						}
+						term.print(items + ".")
+					}
+					else{
+						term.print("Y'AINT GOT SHIT!")
+					}
+				}
+
+			},
+			{
 				name: "help",
 				help: "nobody's coming...",
 				cmd: function (args, term, g){
 					console.log(args)
-					if (args.length === 0)
-						term.print("Type 'help' for help. What's this game called?")
+					term.print("Type 'help' for help. What's this game called?")
+					if (args.length === 0){
+						//TODO
+					}
 					else{
 						//TODO impliment specific help
 					}
@@ -92,6 +115,8 @@ class game{
 	processCmd(command, term){
 		console.log("Process Cmd: " + command)
 		
+		command = command.toLowerCase()
+
 		//process args and validate
 		var args = command.split(' ')
 		command = args[0]
@@ -126,5 +151,12 @@ class game{
 			}
 			
 		}
+	}
+	addToInventory(item,term){
+		if(this.player.inventory.length === 0){
+			//this.player.inventory = []
+			term.print("Oh, by the way.. You can list your items with *inventory* or *i*")
+		}
+		this.player.inventory.push(item)
 	}
 }
