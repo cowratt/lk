@@ -29,35 +29,13 @@ class game{
 					//"look at rock" / "lk rock"
 					else{
 						var selectedArg = 0
-						var thingsToLookAt = g.room.objs.concat(g.player.inventory)
-						console.log(thingsToLookAt)
 						while(selectedArg < args.length && desc == null){
-							for (var i = 0; i < thingsToLookAt.length; i++){
-								var obj = thingsToLookAt[i]
-								//check for synonym commands
-								var syns = obj.name
-								if (!Array.isArray(obj.name)){
-									syns = [obj.name]
-								}
-								console.log(syns.length)
-								for (var j = 0; j < syns.length; j++){
-									console.log(syns[j], args[selectedArg])
-									if (syns[j] === args[selectedArg]){
-										if(obj.tries == null) obj.tries = 0
-										if(Array.isArray(obj.desc)){
-											desc = obj.desc[min(obj.desc.length - 1, obj.tries)]
-											obj.tries++
-										}
-										else{
-											desc = obj.desc
-										}
-									}
-								}
-							}
-						
+							desc = JSONFinder(g.room.objs, args[selectedArg], "desc")
+							if(desc === null)desc = JSONFinder(g.player.inventory, args[selectedArg], "desc")
 							selectedArg++
 						}
 					}
+					console.log(desc)
 					
 					if(typeof(desc) === "function") desc = desc([],term,g)
 					if(desc == null) desc = ""
@@ -69,7 +47,7 @@ class game{
 				name: ["inventory", "inv", "items", "i"],
 				help: "what you've got",
 				cmd: function(args,term,g){
-					if(g.player.inventory != null){
+					if(g.player.inventory.length != 0){
 						var items = "You have " + g.player.inventory[0].title
 						for(var i = 1; i < g.player.inventory.length; i++){
 							items = items + ", " + g.player.inventory[i]
@@ -158,5 +136,60 @@ class game{
 			term.print("Oh, by the way.. You can list your items with *inventory* or *i*")
 		}
 		this.player.inventory.push(item)
+	}
+}
+
+
+//Everything is stored in json objects with the key in the object. I'm seriously reinventing the wheel here.
+//keys are stored under "name", possibly in an array
+//when the specified object is found, the whole thing is returned.
+//order or operations: '*'  -> everything -> '_'
+function JSONFinder(allObjects, name, key = null){
+
+	//first we look for the * case
+	for (var i = 0; i < allObjects.length; i++){
+		var obj = allObjects[i]
+		if(obj.name === "*"){
+			if(key === null) return obj
+			if(obj[key] !== null) return obj.key
+		}
+	}
+
+	//Then the everything else
+	for (var i = 0; i < allObjects.length; i++){
+		var obj = allObjects[i]
+		//check for synonym commands
+		var syns = obj.name
+		if (!Array.isArray(obj.name)){
+			syns = [obj.name]
+		}
+		console.log(syns)
+		for (var j = 0; j < syns.length; j++){
+			if (syns[j] === name){
+				
+				if(key === null){
+					return obj
+				}
+				if(Array.isArray(obj[key])){
+					
+					if(obj[key + "_tries"] == null) obj[key + "_tries"] = 0
+					else obj[key + "_tries"]++
+					var idx = min(obj[key].length - 1, obj[key + "_tries"])
+					return obj[key][idx]
+				}
+				else{
+					return obj[key]
+				}
+			}
+		}
+	}
+
+	//then we look for the _ case
+	for (var i = 0; i < allObjects.length; i++){
+		var obj = allObjects[i]
+		if(obj.name === "_"){
+			if(key === null) return obj
+			if(obj[key] !== null) return obj.key
+		}
 	}
 }

@@ -14,8 +14,9 @@ function setup() {
 
   	canvas = document.getElementById("defaultCanvas0").getContext("2d")
 	
-	cliff = loadImage('game/sprites/cliff.png')
-
+	girl = loadImage('game/sprites/girl_falling_lg.png')
+	girl_resting = loadImage('game/sprites/girl_resting_lg2.png')
+	saveGirlBG = [loadImage('game/sprites/bg1.jpg'), loadImage('game/sprites/bg2.jpg'), loadImage('game/sprites/bg3.jpg')]
 	term = new terminal(width,height)
 	g = new game()
 	//frameRate(30)
@@ -29,11 +30,9 @@ function setup() {
 }
 var totalTime = 0
 function draw() {
-	if(term.drawOverride != null){
-		rt = term.drawOverride()
-		if(rt) return
-	}
 	term.draw()
+	
+	//text(frameRate(),20,40)
 
 
 }
@@ -128,25 +127,6 @@ class terminal {
 
 	}
 	//keyboard inputs
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -251,6 +231,10 @@ class terminal {
 	}
 	draw(){
 		background(0)
+		if(this.drawOverride != null){
+			var rt = this.drawOverride(this,g)
+			if(rt) return
+		}
 		if(this.flashState > 0){
 			this.flashState--
 			background(30)
@@ -301,3 +285,4 @@ const fillMixedText = (ctx, args, x, y) => {
   });
   ctx.restore();
 };
+

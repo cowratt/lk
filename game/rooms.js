@@ -34,6 +34,13 @@ rooms = {
 					
 				},
 			},
+			{
+				name: "_",
+				help: "",
+				cmd: function(args,term,g){
+					term.print("That command is way too advanced.")
+				}
+			}
 		]
 	},
 	"room_2": {
@@ -179,6 +186,7 @@ rooms = {
 					term.clear()
 					console.log("play animation")
 					g.room = rooms["room_cliff"]
+					g.room.setup(term,g)
 					return ""
 				}
 			}
@@ -196,11 +204,61 @@ rooms = {
 		vars :[
 
 		],
-		setup: function(){
+		setup: function(term,g){
+			g.room.vars.girlY = -100
+			g.room.vars.girlX = 200
+			g.room.vars.save = false
+			g.room.vars.drawBG = false
+			g.room.vars.opac = 0
+			term.drawOverride = g.room.draw
 
 		},
-		draw: function(){
+		draw: function(term,g){
+			if(g.room.vars.drawBG){
+				g.room.vars.opac+= 1
+				tint(255, g.room.vars.opac)
+				image(saveGirlBG[round(g.room.vars.opac / 20) % 3], 0, 0)
+				tint(255,255)
+			}
 
+			image(girl, g.room.vars.girlX, g.room.vars.girlY)
+			if(!g.room.vars.save){
+				
+				g.room.vars.girlY += 4.5
+				if(canvas.measureText(term.input).width > g.room.vars.girlX && g.room.vars.girlY > (height - 140)){
+					g.room.vars.save = true
+					girl = girl_resting
+					term.keyPressedControlOverride = function(){
+						return true
+					}
+					term.keyTypedControlOverride = function(){
+						return true
+					}
+					setTimeout(function() {
+						term.print("^You saved me.^")
+						term.print("  ")
+						g.room.vars.drawBG = true
+						setTimeout(function() {
+							term.update("^Thank you. What's your name?^")
+							term.print("   ")
+							setTimeout(function() {
+								term.update("^Oh, it's^ " + term.input + ".")
+								term.print("   ")
+								setTimeout(function() {
+									term.update("^Thank you,^ " + term.input + ".")
+									term.print("   ")
+								}, 3000);
+							}, 3500);
+						}, 3000);
+					}, 1500);
+					
+				}
+			}
+
+			
+
+
+			return false
 		},
 	},
 }
