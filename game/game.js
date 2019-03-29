@@ -1,7 +1,7 @@
 class game{
 
 	constructor(){
-		this.room = rooms["room_1"]
+		this.room = rooms["killed_girl_twice"]
 		this.player = {
 			name: "",
 			inventory: [],
@@ -31,11 +31,12 @@ class game{
 						var selectedArg = 0
 						while(selectedArg < args.length && desc == null){
 							desc = JSONFinder(g.room.objs, args[selectedArg], "desc")
-							if(desc === null)desc = JSONFinder(g.player.inventory, args[selectedArg], "desc")
+							var inv = g.player.inventory
+							if(desc == null) desc = JSONFinder(inv, args[selectedArg], "desc")
 							selectedArg++
 						}
 					}
-					console.log(desc)
+
 					
 					if(typeof(desc) === "function") desc = desc([],term,g)
 					if(desc == null) desc = ""
@@ -47,6 +48,7 @@ class game{
 				name: ["inventory", "inv", "items", "i"],
 				help: "what you've got",
 				cmd: function(args,term,g){
+					console.log("ARGS: "+ args)
 					if(g.player.inventory.length != 0){
 						var items = "You have " + g.player.inventory[0].title
 						for(var i = 1; i < g.player.inventory.length; i++){
@@ -54,7 +56,7 @@ class game{
 						}
 						term.print(items + ".")
 					}
-					else{
+					else if(args == ""){
 						term.print("Y'AINT GOT SHIT!")
 					}
 				}
@@ -73,6 +75,31 @@ class game{
 						//TODO impliment specific help
 					}
 				},
+			},
+			{
+				name: ["go", "walk", "travel", "venture", "run", "move"],
+				help : ["A method of locomotion."],
+				cmd: function(args,term,g){
+					if(args.length === 0){
+						term.print("you gotta say where you want to go.")
+					}
+
+					else{
+						var move = null
+						var selectedArg = 0
+						while(selectedArg < args.length && move == null){
+							move = JSONFinder(g.room.objs, args[selectedArg], "move")
+							if(move === null)move = JSONFinder(g.player.inventory, args[selectedArg], "move")
+							selectedArg++
+						}
+					}
+					console.log(move)
+					
+					if(typeof(move) === "function") move = move([],term,g)
+					if(move == null) move = ""
+
+					term.print(move)
+				}
 			},
 			{
 				name: "cls",
@@ -145,6 +172,8 @@ class game{
 //when the specified object is found, the whole thing is returned.
 //order or operations: '*'  -> everything -> '_'
 function JSONFinder(allObjects, name, key = null){
+	console.log("jsonFinder" + name)
+	console.log(allObjects)
 
 	//first we look for the * case
 	for (var i = 0; i < allObjects.length; i++){

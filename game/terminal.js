@@ -52,7 +52,7 @@ function keyTyped(){
 function keyPressed(){
 	if(term.keyPressedControlOverride != null){
 		var rt = term.keyPressedControlOverride(keyCode, term, g)
-		if(rt) return
+		if(rt) return false
 	}
 	console.log(keyCode)
 	term.blinkState = 0
@@ -106,6 +106,7 @@ class terminal {
 		this.lineSpacing = 5
 		this.blinkRate = 60
 		this.blinkState = 0
+		this.blink = true
 
 		this.flashState = 0
 
@@ -142,6 +143,8 @@ class terminal {
 	}
 	clear(){
 		this.lines = []
+		this.cursorPos = 0
+		this.input = ""
 	}
 	print(text){
 		if(text === "") return
@@ -247,7 +250,7 @@ class terminal {
 		//draw blink
 		this.blinkState++
 		if (this.blinkState > this.blinkRate) this.blinkState = 0
-		if(this.blinkState < this.blinkRate /2){
+		if(this.blinkState < this.blinkRate /2 && this.blink){
 			//calc cursor pos
 			var keyWidth = 16
 			var cursorOffset = this.cursorPos * keyWidth + 47

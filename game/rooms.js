@@ -1,3 +1,21 @@
+//Let's set up some global shit that can be reused.
+
+weirdCmd = {
+	name: ["lick", "touch", "grab", "rape", "like", "smell", "sniff", "rub", "attack", "grope", "fuck"],
+	cmd: function(args, term, g){
+		if(args[0] === "girl" || args[0] === "her" || args[1] === "girl"){
+			var res = JSONFinder(g.room.other, "weird", "desc")
+			
+			if(typeof(res) === "function"){
+				res(args,term,g)
+			}
+			else{
+				term.print(res)
+			}
+		}
+	}
+}
+
 rooms = {
 	"room_1": {
 		desc: [
@@ -35,10 +53,17 @@ rooms = {
 				},
 			},
 			{
+				name: "hello",
+				help: "",
+				cmd: function(args,term,g){
+					term.print("Hi. This game is called lk.")
+				},
+			},
+			{
 				name: "_",
 				help: "",
 				cmd: function(args,term,g){
-					term.print("That command is way too advanced.")
+					term.print("That command is way too advanced. ")
 				}
 			}
 		]
@@ -145,7 +170,8 @@ rooms = {
 	"room_4": {
 		desc: [
 		"You are in a meadow. There is a cliff above you",
-		"There are also some rocks on the ground."
+		"There are also some rocks on the ground.",
+		"But yeah, the main focus is the cliff."
 		],
 
 		cmds: [
@@ -159,9 +185,27 @@ rooms = {
 		],
 		objs:[
 			{
+				name: "meadow",
+				desc: [
+					"What a beautiful meadow!",
+					"The grass is gistening moistly.",
+				],
+				move: [
+					"fuck that!",
+					"U Tryna get ticks, brah?",
+				],
+			},
+			{
 				name: "cliff",
 				desc: [
 				"it's a cliff. Is that a girl up there?",
+				],
+				move: [
+					"The cliff is right next to you.",
+					"like you're already at the base of the cliff",
+					"okay, you know what? POOF!! Now you're at the cliff.",
+					"...",
+					"Is that a girl up there?",
 				],
 			},
 			{
@@ -180,22 +224,24 @@ rooms = {
 					
 				}, "good job"],
 			},
-			{
+						{
 				name: ["girl"],
 				desc: function(args,term,g){
 					term.clear()
 					console.log("play animation")
-					term.print("*ok cool, that's pretty much the end*")
+					//term.print("*ok cool, that's pretty much the end*")
 					g.room = rooms["room_cliff"]
 					g.room.setup(term,g)
 					return ""
 				}
 			}
+
 		],
 		vars :[
 
 		],
 	},
+
 	"room_cliff": {
 		desc: [
 		"cliff",
@@ -207,10 +253,12 @@ rooms = {
 		],
 		setup: function(term,g){
 			g.room.vars.girlY = -100
-			g.room.vars.girlX = 200
+			g.room.vars.girlX = 130
 			g.room.vars.save = false
 			g.room.vars.drawBG = false
 			g.room.vars.opac = 0
+			g.room.vars.fallingRate = 2.5
+			g.room.vars.secondTime = false
 			term.drawOverride = g.room.draw
 
 		},
@@ -225,7 +273,7 @@ rooms = {
 			image(girl, g.room.vars.girlX, g.room.vars.girlY)
 			if(!g.room.vars.save){
 				
-				g.room.vars.girlY += 4.5
+				g.room.vars.girlY += g.room.vars.fallingRate
 				if(canvas.measureText(term.input).width > g.room.vars.girlX && g.room.vars.girlY > (height - 140)){
 					g.room.vars.save = true
 					girl = girl_resting
@@ -244,15 +292,38 @@ rooms = {
 							term.print("   ")
 							setTimeout(function() {
 								term.update("^Oh, it's^ " + term.input + ".")
+								g.player.name = term.input
 								term.print("   ")
 								setTimeout(function() {
 									term.update("^Thank you,^ " + term.input + ".")
 									term.print("   ")
+									setTimeout(function(){
+										term.clear()
+										term.drawOverride = null
+										term.keyPressedControlOverride = null
+										term.keyTypedControlOverride = null
+										term.input = ""
+										if(g.room.vars.secondTime){
+											g.room = rooms["saved_girl_twice"]
+											g.room.setup(term,g)
+										}
+										else g.room = rooms["saved_girl"]
+									}, 3000)
 								}, 3000);
 							}, 3500);
 						}, 3000);
 					}, 1500);
 					
+				}
+				else if(canvas.measureText(term.input).width <= g.room.vars.girlX && g.room.vars.girlY > (height + 50)){
+					term.clear()
+					term.drawOverride = null
+					if(g.room.vars.secondTime){
+
+						g.room = rooms["killed_girl_twice"]
+						g.room.setup(term,g)
+					}
+					else g.room = rooms["killed_girl"]
 				}
 			}
 
@@ -262,4 +333,260 @@ rooms = {
 			return false
 		},
 	},
+
+
+
+
+
+
+	"killed_girl" : {
+		desc: [
+			"The base of a cliff. There's a dead girl on the ground.",
+			"There's a path leading up the cliff and another path leading back in time",
+		] ,
+		objs: [
+			{
+				name: ["girl"],
+				desc: [
+					"She's dead.",
+					"She looked like a Sarah. Maybe a Jennifer.",
+					"You could have saved her. It's too late now.",
+					"This game isn't a staring-at-dead-girls simulator."
+				],
+			},
+			{
+				name: ["back", "backwards", "before"],
+				move: [
+					function(args,term,g){
+						g.room = rooms["room_cliff"]
+						g.room.setup(term,g)
+						g.room.vars.fallingRate = 6
+						g.room.vars.secondTime = true
+						term.clear()
+					}
+				]
+			}
+		],
+		cmds: [
+			{
+				name: ["rip", "oops", "shit", "fuck"],
+				cmd: function(args,term,g){
+					term.print("indeed.")
+				},
+			},
+			weirdCmd,
+		],
+		other: [
+			{
+				name: "weird",
+				desc: [
+					"What the fuck is wrong with you?",
+					function(args,term,g){
+						term.clear()
+						term.print("okay, you're getting started over.")
+						g.room = rooms["room_1"]
+					}
+				],
+			},
+		],
+	},
+
+	"saved_girl" : {
+		desc: [
+			"You're at the cliff base. The girl that you saved is standing before you.",
+			"There's a path leading up the cliff.",
+		] ,
+		objs: [
+			{
+				name: ["girl"],
+				desc: [
+					"She looks a bit shaken up but overall, alive.",
+					"Her hair is blowing slightly in the breeze.",
+					"To be honest, she's kind of ugly.",
+				],
+			},
+			{
+				name: ["back", "backwards", "before"],
+				move: [
+					function(args,term,g){
+						g.room = rooms["room_cliff"]
+						g.room.setup(term,g)
+						g.room.vars.fallingRate = 8
+						g.room.vars.secondTime = true
+						term.clear()
+					}
+				]
+			}
+		],
+		cmds: [
+			{
+				name: ["rip", "oops", "shit", "fuck", "damn"],
+				cmd: function(args,term,g){
+					term.print("indeed.")
+				},
+			},
+			weirdCmd,
+		],
+		other: [
+			{
+				name: "weird",
+				desc: [
+					"What the fuck is wrong with you?",
+					function(args,term,g){
+						term.clear()
+						term.print("okay, you're getting started over.")
+						g.room = rooms["room_1"]
+					}
+				],
+			},
+		],
+	},
+
+	"killed_girl_twice" : {
+		setup: function(term,g){
+			term.print("wow, you just killed the same girl twice.")
+		},
+		desc: [
+			"you're a fucking killer. *go up* the damn cliff.",
+		] ,
+		objs: [
+			{
+				name: ["girl"],
+				desc: [
+					"She's really very surely dead this time.",
+					"You sure got her. Good Job.",
+				],
+			},
+			{
+				name: ["back", "backwards", "before"],
+				move: [
+					"Why, so you can kill her a third time?",
+					"No."
+				],
+			},
+			{
+				name: ["up", "cliff"],
+				move: [
+					function(args,term,g){
+						g.room = rooms["climb_cliff"]
+						g.room.setup(term,g)
+					}
+				]
+			},
+		],
+		cmds: [
+			{
+				name: ["rip", "oops", "shit", "fuck"],
+				cmd: function(args,term,g){
+					term.print("indeed.")
+				},
+			},
+			weirdCmd,
+		],
+		other: [
+			{
+				name: "weird",
+				desc: [
+					"What the fuck is wrong with you?",
+					function(args,term,g){
+						term.clear()
+						term.print("okay, you're getting started over.")
+						g.room = rooms["room_1"]
+					}
+				],
+			},
+		],
+	},
+
+	"climb_cliff": {
+		setup: function(term,g){
+			term.blink = false;
+			term.print("You Start up the hill.")
+			setTimeout(function(){
+				if(g.room.vars.distanceClimbed === 0)
+					term.print("*Ahem* ... You Start up the hill!")
+			}, 4000)
+			term.input = "|" + " ".repeat(g.room.vars.cliffHeight) + "|"
+
+			term.keyPressedControlOverride = function(keyCode,term,g){
+
+				if (keyCode == ENTER || keyCode == BACKSPACE) return true
+				if (keyCode == 116) return false
+				g.room.vars.distanceClimbed+= 1
+				term.input = "|" + "*".repeat(g.room.vars.distanceClimbed) + " ".repeat(g.room.vars.cliffHeight - g.room.vars.distanceClimbed) + "|"
+				
+				//33%
+				if(g.room.vars.distanceClimbed >= g.room.vars.cliffHeight/3 && g.room.vars.fallingTimer > g.room.vars.fallingTimer2){
+					term.print("The grade of the hill steepens")
+					g.room.vars.fallingTimer = g.room.vars.fallingTimer2
+				}
+				//66%
+				if(g.room.vars.distanceClimbed >= g.room.vars.cliffHeight*2/3 && g.room.vars.fallingTimer > g.room.vars.fallingTimer3){
+					term.print("The hill gets even steeper. You can hear someone snoring.")
+					g.room.vars.fallingTimer = g.room.vars.fallingTimer3
+				}
+
+				if(g.room.vars.distanceClimbed >= g.room.vars.cliffHeight){
+					g.room = rooms["cliff_top"]
+					g.room.setup(term,g)
+				}
+
+				return true;
+			}
+			decayFunction = function(){
+				if(g.room.vars.climbingCliff){
+					if(g.room.vars.distanceClimbed > 0)
+						g.room.vars.distanceClimbed--
+						term.input = "|" + "*".repeat(g.room.vars.distanceClimbed) + " ".repeat(g.room.vars.cliffHeight - g.room.vars.distanceClimbed) + "|"
+					setTimeout(decayFunction, g.room.vars.fallingTimer)
+				}
+			}
+			decayFunction()
+		},
+		vars: {
+			fallingTimer: 400,
+			fallingTimer2: 150,
+			fallingTimer3: 40,
+			distanceClimbed: 0,
+			cliffHeight:50,
+			climbingCliff: true,
+		},
+
+	},
+
+	"cliff_top": {
+		setup: function(term,g){
+			term.blink = true;
+			term.clear()
+			term.keyPressedControlOverride = null;
+			term.print("You reach the top.")
+			setTimeout(function(){
+				console.log(term.input.length)
+				if(term.input.length > 3){
+					g.room.vars.playerText = term.input
+					setTimeout(function(){
+						term.print("A large figure stirrs.")
+						setTimeout(function(){
+							term.print("^Did somebody say ^" + g.room.vars.playerText + "^?^")
+
+							//the figure throws you off of the cliff
+							//wait, cls
+							//plop
+							//either dead girl or alive girl, reactionary to getting thrown off
+
+						},1500)
+					}, 1500)
+				}
+			}, 500)
+
+		},
+		vars: {
+			climbingCliff: false,
+			playerText: ""
+		},
+		desc: [
+			"You're at the top of a cliff. A large figure is sleeping",
+		]
+	}
 }
+
