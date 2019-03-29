@@ -185,6 +185,7 @@ rooms = {
 				desc: function(args,term,g){
 					term.clear()
 					console.log("play animation")
+					term.print("*ok cool, that's pretty much the end*")
 					g.room = rooms["room_cliff"]
 					g.room.setup(term,g)
 					return ""

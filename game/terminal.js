@@ -237,7 +237,7 @@ class terminal {
 		}
 		if(this.flashState > 0){
 			this.flashState--
-			background(30)
+			background(30 - (3*(6 - this.flashState)))
 		}
 
 		fill(60, 102, 200);
