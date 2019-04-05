@@ -1,7 +1,7 @@
 //Let's set up some global shit that can be reused.
 
 weirdCmd = {
-	name: ["lick", "touch", "grab", "rape", "like", "smell", "sniff", "rub", "attack", "grope", "fuck"],
+	name: ["lick", "touch", "grab", "rape", "like", "smell", "sniff", "rub", "attack", "grope", "fuck", "diddle", "kiss", "moisten", "tickle", "romp"],
 	cmd: function(args, term, g){
 		if(args[0] === "girl" || args[0] === "her" || args[1] === "girl"){
 			var res = JSONFinder(g.room.other, "weird", "desc")
@@ -182,6 +182,12 @@ rooms = {
 				cmd: function (args, term, g){
 				},
 			},
+			{
+				name: "talk",
+				cmd: function(args, term, g){
+					g.room.objs[3].desc("",term,g)
+				}
+			}
 		],
 		objs:[
 			{
@@ -198,13 +204,10 @@ rooms = {
 			{
 				name: "cliff",
 				desc: [
-				"it's a cliff. Is that a girl up there?",
+					"it's a cliff. Is that a girl up there?",
 				],
 				move: [
-					"The cliff is right next to you.",
-					"like you're already at the base of the cliff",
-					"okay, you know what? POOF!! Now you're at the cliff.",
-					"...",
+					"The cliff doesn't *look* very climbable.",
 					"Is that a girl up there?",
 				],
 			},
@@ -304,7 +307,8 @@ rooms = {
 										term.keyTypedControlOverride = null
 										term.input = ""
 										if(g.room.vars.secondTime){
-											g.room = rooms["saved_girl_twice"]
+											//saved_girl_twice TODO
+											g.room = rooms["saved_girl"]
 											g.room.setup(term,g)
 										}
 										else g.room = rooms["saved_girl"]
@@ -365,7 +369,16 @@ rooms = {
 						term.clear()
 					}
 				]
-			}
+			},
+			{
+				name: ["up", "cliff", "path"],
+				move: [
+					function(args,term,g){
+						g.room = rooms["climb_cliff"]
+						g.room.setup(term,g)
+					}
+				]
+			},
 		],
 		cmds: [
 			{
@@ -375,6 +388,12 @@ rooms = {
 				},
 			},
 			weirdCmd,
+			{
+				name: "talk",
+				cmd: function(args,term,g){
+					term.print("The fuck do you think will happen?")
+				}
+			},
 		],
 		other: [
 			{
@@ -416,7 +435,16 @@ rooms = {
 						term.clear()
 					}
 				]
-			}
+			},
+			{
+				name: ["up", "cliff"],
+				move: [
+					function(args,term,g){
+						g.room = rooms["climb_cliff"]
+						g.room.setup(term,g)
+					}
+				]
+			},
 		],
 		cmds: [
 			{
@@ -424,6 +452,12 @@ rooms = {
 				cmd: function(args,term,g){
 					term.print("indeed.")
 				},
+			},
+			{
+				name: "talk",
+				cmd: function(args,term,g){
+					term.print("^thanks, b.^")
+				}
 			},
 			weirdCmd,
 		],
@@ -481,6 +515,12 @@ rooms = {
 					term.print("indeed.")
 				},
 			},
+			{
+				name: "talk",
+				cmd: function(args,term,g){
+					term.print("The fuck do you think will happen?")
+				}
+			},
 			weirdCmd,
 		],
 		other: [
@@ -502,6 +542,10 @@ rooms = {
 		setup: function(term,g){
 			term.blink = false;
 			term.print("You Start up the hill.")
+
+			g.room.vars.fallingTimer = g.room.vars.fallingTimer1
+			g.room.vars.distanceClimbed = 0
+
 			setTimeout(function(){
 				if(g.room.vars.distanceClimbed === 0)
 					term.print("*Ahem* ... You Start up the hill!")
@@ -545,6 +589,7 @@ rooms = {
 		},
 		vars: {
 			fallingTimer: 400,
+			fallingTimer1: 400,
 			fallingTimer2: 150,
 			fallingTimer3: 40,
 			distanceClimbed: 0,
@@ -568,14 +613,22 @@ rooms = {
 						term.print("A large figure stirrs.")
 						setTimeout(function(){
 							term.print("^Did somebody say ^" + g.room.vars.playerText + "^?^")
+								setTimeout(function(){
+								term.print("The figure picks you up and throws you off of the cliff")
+								term.print("like the wimpy piece of shit that you are.")
+								setTimeout(function(){
+									g.room = rooms["cliff_base"]
+									g.room.setup(term,g)
+								}, 3600)
 
+							},2500)
 							//the figure throws you off of the cliff
 							//wait, cls
 							//plop
 							//either dead girl or alive girl, reactionary to getting thrown off
 
-						},1500)
-					}, 1500)
+						},1700)
+					}, 1000)
 				}
 			}, 500)
 
@@ -585,8 +638,108 @@ rooms = {
 			playerText: ""
 		},
 		desc: [
-			"You're at the top of a cliff. A large figure is sleeping",
-		]
-	}
+			"You're at the top of a cliff. A large figure is sleeping next to a fire.",
+		],
+		objs: [
+			{
+				name: ["figure", "person", "man", "him", "them", "her"],
+				desc: ["It looks like a man with a big long santa beard"],
+			},
+		],
+		cmds: [
+			{
+				name: ["attack", "punch", "throw", "push", "fight"],
+				cmd: function(args, term, g){
+					term.print("You approach the figure with malice in your heart.")
+					g.room.other.interaction(term,g)
+				},
+			},
+			{
+				name: ["talk", "yell", "say"],
+				cmd: function(args, term, g){
+					term.print("Your words startle the figure awake.")
+					g.room.other.interaction(term,g)
+				}
+			},
+		],
+		other: {
+
+			interaction: function(term,g){
+				
+				setTimeout(function(){
+					term.print("^What Do you want?^")
+					setTimeout(function(){
+						term.print("^Do you want to kill me like you killed that girl?^")
+						setTimeout(function(){
+							term.print("^I won't let you.^")
+							term.allowTyping = false
+							term.keyPressedControlOverride = function(){
+								return true
+							}
+							setTimeout(function(){
+								term.clear()
+								term.print("*The End.*")
+							},6000)
+						}, 1500)
+					}, 1500)
+				}, 2000)
+			},
+		},
+
+	},
+	"cliff_base": {
+		setup: function(term,g){
+			term.clear()
+			setTimeout(function(){
+					term.print("^plop.^")		
+			}, 400)
+		
+		},
+		desc: [
+			"You're at the bottom of the cliff again. You landed on the girl",
+			"The path leading up the cliff is looking at you mockingly.",
+		] ,
+		objs: [
+			{
+				name: ["girl"],
+				desc: [
+					"She's very flat and very, very dead.",
+				],
+			},
+			{
+				name: ["up", "cliff"],
+				move: [
+					function(args,term,g){
+						g.room = rooms["climb_cliff"]
+						g.room.setup(term,g)
+					}
+				]
+			},
+		],
+		cmds: [
+			{
+				name: ["rip", "oops", "shit", "fuck"],
+				cmd: function(args,term,g){
+					term.print("indeed.")
+				},
+			},
+			weirdCmd,
+		],
+		other: [
+			{
+				name: "weird",
+				desc: [
+					"What the fuck is wrong with you?",
+					function(args,term,g){
+						term.clear()
+						term.print("okay, you're getting started over.")
+						g.room = rooms["room_1"]
+					}
+				],
+			},
+		],
+	},
+
+
 }
 

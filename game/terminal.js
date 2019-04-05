@@ -108,6 +108,8 @@ class terminal {
 		this.blinkState = 0
 		this.blink = true
 
+
+
 		this.flashState = 0
 
 		this.cursorPos = 0
@@ -121,6 +123,7 @@ class terminal {
 
 		this.callback = null
 		this.drawOverride = null
+		this.allowTyping = true
 
 		this.keyTypedControlOverride = null
 		this.keyPressedControlOverride = null
@@ -245,19 +248,21 @@ class terminal {
 
 		fill(60, 102, 200);
 
-
-		text("> " + this.input,20,height - this.lineHeight)
-		//draw blink
-		this.blinkState++
-		if (this.blinkState > this.blinkRate) this.blinkState = 0
-		if(this.blinkState < this.blinkRate /2 && this.blink){
-			//calc cursor pos
-			var keyWidth = 16
-			var cursorOffset = this.cursorPos * keyWidth + 47
-			text("|",cursorOffset,height - this.lineHeight)
+		if(this.allowTyping){
+			text("> " + this.input,20,height - this.lineHeight)
+			//draw blink
+			this.blinkState++
+			if (this.blinkState > this.blinkRate) this.blinkState = 0
+			if(this.blinkState < this.blinkRate /2 && this.blink){
+				//calc cursor pos
+				var keyWidth = 16
+				var cursorOffset = this.cursorPos * keyWidth + 47
+				text("|",cursorOffset,height - this.lineHeight)
+			}
 		}
 
-		//draw prev lines using a totally different shader method because why the fuck not
+
+		//draw prev lines using a totally different method because why the fuck not
 		for (var i = 0; i < this.lines.length; i++){
 
 			//text(this.lines[i],20,height - this.lineHeight*(i+3))

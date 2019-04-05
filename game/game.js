@@ -1,7 +1,7 @@
 class game{
 
 	constructor(){
-		this.room = rooms["killed_girl_twice"]
+		this.room = rooms["room_1"]
 		this.player = {
 			name: "",
 			inventory: [],
@@ -77,7 +77,7 @@ class game{
 				},
 			},
 			{
-				name: ["go", "walk", "travel", "venture", "run", "move"],
+				name: ["go", "walk", "travel", "venture", "run", "move", "climb"],
 				help : ["A method of locomotion."],
 				cmd: function(args,term,g){
 					if(args.length === 0){
@@ -222,3 +222,5 @@ function JSONFinder(allObjects, name, key = null){
 		}
 	}
 }
+
+
