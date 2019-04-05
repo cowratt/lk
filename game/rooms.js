@@ -417,7 +417,7 @@ rooms = {
 		] ,
 		objs: [
 			{
-				name: ["girl"],
+				name: ["girl", "her"],
 				desc: [
 					"She looks a bit shaken up but overall, alive.",
 					"Her hair is blowing slightly in the breeze.",
@@ -485,7 +485,7 @@ rooms = {
 		] ,
 		objs: [
 			{
-				name: ["girl"],
+				name: ["girl", "her"],
 				desc: [
 					"She's really very surely dead this time.",
 					"You sure got her. Good Job.",
@@ -701,7 +701,7 @@ rooms = {
 		] ,
 		objs: [
 			{
-				name: ["girl"],
+				name: ["girl", "her"],
 				desc: [
 					"She's very flat and very, very dead.",
 				],
