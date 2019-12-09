@@ -1,20 +1,3 @@
-//Let's set up some global shit that can be reused.
-
-weirdCmd = {
-	name: ["lick", "touch", "grab", "rape", "like", "smell", "sniff", "rub", "attack", "grope", "fuck", "diddle", "kiss", "moisten", "tickle", "romp"],
-	cmd: function(args, term, g){
-		if(args[0] === "girl" || args[0] === "her" || args[1] === "girl"){
-			var res = JSONFinder(g.room.other, "weird", "desc")
-			
-			if(typeof(res) === "function"){
-				res(args,term,g)
-			}
-			else{
-				term.print(res)
-			}
-		}
-	}
-}
 
 rooms = {
 	"room_1": {
@@ -741,5 +724,22 @@ rooms = {
 	},
 
 
+}
+//Let's set up some global shit that can be reused.
+
+weirdCmd = {
+	name: ["lick", "touch", "grab", "rape", "like", "smell", "sniff", "rub", "attack", "grope", "fuck", "diddle", "kiss", "moisten", "tickle", "romp"],
+	cmd: function(args, term, g){
+		if(args[0] === "girl" || args[0] === "her" || args[1] === "girl"){
+			var res = JSONFinder(g.room.other, "weird", "desc")
+			
+			if(typeof(res) === "function"){
+				res(args,term,g)
+			}
+			else{
+				term.print(res)
+			}
+		}
+	}
 }
 
