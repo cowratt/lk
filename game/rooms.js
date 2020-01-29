@@ -1,4 +1,4 @@
-
+var weirdCmd
 rooms = {
 	"room_1": {
 		desc: [
@@ -725,7 +725,8 @@ rooms = {
 
 
 }
-//Let's set up some global shit that can be reused.
+// I don't like having this level of vulgarity in my codebase, but it needs to be done.
+// This is if you make weird comments about the girl.
 
 weirdCmd = {
 	name: ["lick", "touch", "grab", "rape", "like", "smell", "sniff", "rub", "attack", "grope", "fuck", "diddle", "kiss", "moisten", "tickle", "romp"],

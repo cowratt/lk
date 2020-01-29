@@ -5,7 +5,8 @@ html, body {
 }
 canvas {
 	font-family: november;
-	@font-face { font-family: november; src: url('./november.ttf'); } 
+  @font-face { font-family: november; src: url('./november.ttf'); } 
+  display: block;
 }
 body {
   margin: 0;
@@ -17,3 +18,5 @@ body {
   /* This centers our sketch vertically. */
   align-items: center;
 }
+@font-face { font-family: november; src: url('./november.ttf'); } 
+

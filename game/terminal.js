@@ -1,148 +1,182 @@
+const min = Math.min
+const max = Math.max
+
 var g
-
-var canvas
 var term
-
 var cliff
+
+setTimeout(setup, 50)
 
 
 
 function setup() {
-	var cnv = createCanvas(windowWidth, windowHeight);
-  	cnv.style('display', 'block');
-
-
-  	canvas = document.getElementById("defaultCanvas0").getContext("2d")
 	
+	/*
 	girl = loadImage('game/sprites/girl_falling_lg.png')
 	girl_resting = loadImage('game/sprites/girl_resting_lg2.png')
 	saveGirlBG = [loadImage('game/sprites/bg1.jpg'), loadImage('game/sprites/bg2.jpg'), loadImage('game/sprites/bg3.jpg')]
-	term = new terminal(width,height)
+	*/
+	term = new terminal(window.innerWidth,window.innerHeight)
+	// this is used to tie the input to the terminal object
+	addEventListener('keydown', function(event) {
+		if(event.key == "Backspace")
+		event.preventDefault()
+		term.keyPressed(event)
+	}, false);
+	window.onresize = function(event) {
+		console.log("RESIZE")
+		console.log(window.innerWidth, window.innerHeight)
+		this.term.resize(window.innerWidth, window.innerHeight);
+	};
 	g = new game()
-	//frameRate(30)
-	
-	//draw text
-	textSize(32);
-	myFont = loadFont('november.ttf');
-	textFont(myFont);
-	setTimeout(function() {canvas.font = "32px november"}, 10);
-	
 }
 var totalTime = 0
-function draw() {
-	term.draw()
-	
-	//text(frameRate(),20,40)
 
-
-}
-
-function keyTyped(){
-
-	if ([13].includes(keyCode)) return
-	if(term.keyTypedControlOverride != null){
-		var rt = term.keyTypedControlOverride(key, term, g)
-		if(rt) return false
-	}
-	term.input = [term.input.slice(0, term.cursorPos), key, term.input.slice(term.cursorPos)].join('');
-	term.cursorPos += 1
-	return false
-}
-
-function keyPressed(){
-	if(term.keyPressedControlOverride != null){
-		var rt = term.keyPressedControlOverride(keyCode, term, g)
-		if(rt) return false
-	}
-	console.log(keyCode)
-	term.blinkState = 0
-	if(keyCode == LEFT_ARROW) term.cursorPos = max(0,term.cursorPos - 1)
-	if(keyCode == RIGHT_ARROW) term.cursorPos = min(term.input.length,term.cursorPos + 1)
-
-	if(keyCode == UP_ARROW){
-		console.log(term.lastCommandsPos, term.lastCommands.length)
-		if(term.lastCommandsPos > term.lastCommands.length || term.lastCommands.length == 0){
-			term.flash()
-			return
-		}
-		term.input = term.lastCommands[term.lastCommandsPos]
-		term.cursorPos = term.input.length
-		term.lastCommandsPos = min(term.lastCommandsPos + 1, term.lastCommands.length - 1)
-	}
-	if(keyCode == BACKSPACE){
-		if(term.cursorPos != 0){
-			term.input = [term.input.slice(0, term.cursorPos - 1), term.input.slice(term.cursorPos)].join('');
-			term.cursorPos -= 1
-		}
-		else
-			term.flash()
-		return false
-	}
-	if (keyCode == DELETE){
-		if(term.cursorPos < term.input.length){
-			term.input = [term.input.slice(0, term.cursorPos), term.input.slice(term.cursorPos + 1)].join('');
-		}
-		else{
-			term.flash()
-		}
-	}
-	if (keyCode == ENTER){
-		term.submit()
-	}
-	if (keyCode == TAB){
-		return false
-	}
-
-}
-
-function windowResized() {
-	resizeCanvas(windowWidth, windowHeight);
-}
 
 class terminal {
 
-	constructor(height, width) {
+	constructor(width, height) {
+		this.canvas = document.getElementById("mainCanvas")
+		this.ctx = this.canvas.getContext('2d')
+		this.resize(width, height)
+		
+
 		this.lineHeight = 35
-		this.lineSpacing = 5
-		this.blinkRate = 60
+		this.blinkRate = 2
 		this.blinkState = 0
 		this.blink = true
-
-
-
 		this.flashState = 0
 
 		this.cursorPos = 0
 		this.lines = []
 		this.lastCommands = []
-		this.lastCommandsPos = 0
+		this.lastCommandsPos = -1
 		this.input = ""
-		this.newInput = false
 
-		this.resize(height, width)
-
-		this.callback = null
-		this.drawOverride = null
 		this.allowTyping = true
-
+		this.drawOverride = null
 		this.keyTypedControlOverride = null
 		this.keyPressedControlOverride = null
+
+		this.framerate = 1000/2
+		this.drawTimeout = 0
+
 		this.print("Welcome to lk.")
+		this.draw()
 
 	}
-	//keyboard inputs
+	/*
+	enableDrawLoop(){
+		//less performance but more useful
+		this._drawLoopEnabled = true
+		this.draw()
+	}
+
+	disableDrawLoop(){
+		//grants mad performance and super powers
+		this._drawLoopEnabled = false
+		this.draw()
+	}
+	*/
+	
+	keyTyped(event){
+		//when a letter/character is typed. just add it to the input string.
+		this.blinkState = 0
+		console.log("keyTyped")
+		if(this.keyTypedControlOverride != null){
+			// if the override returns true, don't process the key
+			var rt = this.keyTypedControlOverride(key, this, g)
+			if(rt){
+				this.draw()
+				return
+			}
+		}
+		this.input = [this.input.slice(0, this.cursorPos), event.key, this.input.slice(this.cursorPos)].join('');
+		this.cursorPos += 1
+		this.draw()
+	}
+
+	keyPressed(event){
+		//console.log(event)
+		//defer simple keypresses to the other function
+		if(event.key.length == 1) return this.keyTyped(event)
+		var keyCode = event.keyCode
+		console.log("keyPressed")
+		if(this.keyPressedControlOverride != null){
+			var rt = this.keyPressedControlOverride(keyCode, this, g)
+			// if the override returns true, don't process the key
+			if(rt){
+				this.draw()
+				return
+			}
+		}
+		console.log(keyCode)
+		this.blinkState = 0
+
+		if(event.key == "ArrowLeft") this.cursorPos = max(0,this.cursorPos - 1)
+		else if(event.key == "ArrowRight") this.cursorPos = min(this.input.length,this.cursorPos + 1)
+
+		else if(event.key == "ArrowUp"){
+			console.log(this.lastCommandsPos, this.lastCommands.length)
+			if(this.lastCommandsPos > this.lastCommands.length || this.lastCommands.length == 0){
+				this.flash()
+			}
+			else{
+				this.lastCommandsPos = min(this.lastCommandsPos + 1, this.lastCommands.length - 1)
+				this.input = this.lastCommands[this.lastCommandsPos ]
+				this.cursorPos = this.input.length
+			}
+		}
+		else if(event.key == "ArrowDown"){
+			console.log(this.lastCommandsPos, this.lastCommands.length)
+			if(this.lastCommandsPos == 0){
+				if(this.input.length != 0) this.input = ""
+				else this.flash()
+			}
+			else{
+				this.lastCommandsPos -= 1
+				this.input = this.lastCommands[this.lastCommandsPos]
+				this.cursorPos = this.input.length
+			}
+		}
+		else if(event.key == "Backspace"){
+			
+			if(this.cursorPos != 0){
+				this.input = [this.input.slice(0, this.cursorPos - 1), this.input.slice(this.cursorPos)].join('');
+				this.cursorPos -= 1
+			}
+			else this.flash()
+		}
+		else if (event.key == "Delete"){
+			if(this.cursorPos < this.input.length){
+				this.input = [this.input.slice(0, this.cursorPos), this.input.slice(this.cursorPos + 1)].join('');
+			}
+			else this.flash()
+		}
+		else if (event.key == "Enter"){
+			this.submit()
+		}
+		else if (event.key == "Tab"){
+			//something
+		}
+		this.draw()
+	}
 
 
 
-	resize(height, width){
-		this.height = height
-		this.width = width
-		this.numLines = height / (this.lineHeight + this.lineSpacing)
+
+	resize(width, height){
+		this.canvas.width = width
+		this.canvas.height = height
+		this.ctx.font = "32px november"
 
 	}
 	flash(){
 		console.log("flash term")
-		this.flashState = 6
+		this.flashState = 1
+		setTimeout(()=>{
+			this.flashState = 0
+			this.draw()}, 100)
 	}
 	clear(){
 		this.lines = []
@@ -209,11 +243,11 @@ class terminal {
 
 	submit(){
 		//push to last commands
-		if(this.lastCommands !== this.input){
+		if(this.lastCommands[0] !== this.input){
 			this.lastCommands.unshift(this.input)
 		}
 		console.log(this.lastCommands, this.lastCommandsPos)
-		this.lastCommandsPos = 0
+		this.lastCommandsPos = -1
 		if(this.input.match(/^\s*$/)){
 			this.flash()
 			this.input = ""
@@ -224,32 +258,37 @@ class terminal {
 		this.lines.unshift(this.input)
 		this.input = ""
 		this.cursorPos = 0
-		this.newInput = true
 
 		g.processCmd(this.lines[0], this)
 	}
-	getInput(){
-		while(this.newInput == false){
-
+	background(lightness){
+		if (typeof lightness === 'string' || lightness instanceof String){
+			this.ctx.fillStyle = lightness
 		}
-		this.newInput = false
-		return this.lines[0]
+		else{
+			var colorString = 'rgb(' + (lightness + ", ").repeat(2) + lightness + ")"
+			this.ctx.fillStyle = colorString
+		}
+		this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 	}
 	draw(){
-		background(0)
+		clearTimeout(this.drawTimeout)
 		if(this.drawOverride != null){
 			var rt = this.drawOverride(this,g)
 			if(rt) return
 		}
 		if(this.flashState > 0){
-			this.flashState--
-			background(30 - (3*(6 - this.flashState)))
+			this.background(60)
 		}
-
-		fill(60, 102, 200);
+		else {
+			this.background("#000")
+		}
+		
 
 		if(this.allowTyping){
-			text("> " + this.input,20,height - this.lineHeight)
+
+			this.ctx.fillStyle = "rgb(60, 102, 200)"
+			this.ctx.fillText(">" + this.input,20, this.canvas.height - this.lineHeight)
 			//draw blink
 			this.blinkState++
 			if (this.blinkState > this.blinkRate) this.blinkState = 0
@@ -257,24 +296,23 @@ class terminal {
 				//calc cursor pos
 				var keyWidth = 16
 				var cursorOffset = this.cursorPos * keyWidth + 47
-				text("|",cursorOffset,height - this.lineHeight)
+				this.ctx.fillText(" ".repeat(this.cursorPos + 1) + "|",15, this.canvas.height - this.lineHeight)
 			}
 		}
 
 
-		//draw prev lines using a totally different method because why the fuck not
+		//draw prev lines
 		for (var i = 0; i < this.lines.length; i++){
 
-			//text(this.lines[i],20,height - this.lineHeight*(i+3))
-			
 			if(typeof(this.lines[i]) !== 'string'){
-				fillMixedText(canvas, this.lines[i], 20,height - this.lineHeight*(i+3))
+				fillMixedText(this.ctx, this.lines[i], 20, this.canvas.height - this.lineHeight*(i+2.5))
 			}
 			else{
-				canvas.fillText(this.lines[i],20,height - this.lineHeight*(i+3))
+				this.ctx.fillText(this.lines[i],20, this.canvas.height - this.lineHeight*(i+2.5))
 			}
 			
 		}
+		this.drawTimeout = setTimeout(()=>this.draw(), this.framerate)
 	}
 }
 
