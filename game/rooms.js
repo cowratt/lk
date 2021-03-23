@@ -12,6 +12,7 @@ rooms = {
 				name: "leave",
 				help: "",
 				cmd: function (args, term, g){
+					term.allowTyping = false
 					term.print(". ")
 					setTimeout(function (){
 						term.update("..")
@@ -19,11 +20,12 @@ rooms = {
 							term.update("...")
 							setTimeout(function (){
 								term.print("Just Kidding, You can't leave this room.")
+								term.allowTyping = true
 								g.room.cmds.unshift({
 									name: "*",
 									help: "",
 									cmd: function (args, term, g){
-										term.print("I'm just fucking around! Look around, you're already in a different room!")
+										term.print("I'm just fucking around! Look around, you're already \nin a different room!")
 										g.room = rooms["room_2"]
 										return true					
 									},
@@ -54,7 +56,7 @@ rooms = {
 	"room_2": {
 		desc: [
 		"Yep, it's definitely a different room",
-		"You think I'd give you another hint in the same way? Bad design!!",
+		"You think I'd give you another hint in the same way?\nBad design!!",
 		],
 		tries:0,
 		cmds: [
@@ -68,12 +70,14 @@ rooms = {
 						var now = new Date()
 						var diff = now - g.room.vars.lastActionTime
 						if(diff > 6450){
+							term.allowTyping = false
 							term.print(" ")
 							term.print("wow, you must REALLY be stumped.")
 							setTimeout(function() {
 								term.print("This is my game.")
 								setTimeout(function() {
 									term.print("Do you think that you have any control?")
+									term.allowTyping = true
 									g.room = rooms["room_3"]
 									g.room.initOverride(term, g)
 
@@ -126,11 +130,12 @@ rooms = {
 				return true
 			}
 			term.keyPressedControlOverride = function(keyCode, term,g) {
-				if(keyCode == BACKSPACE){
+				console.log("KEYCODE!!", keyCode)
+				if(keyCode == "Backspace"){
 					g.room.vars.stringPos = max(g.room.vars.stringPos - 1, 0)
 					g.room.vars.actualInput = g.room.vars.actualInput.slice(0,g.room.vars.actualInput.length - 1)
 				} 
-				if(keyCode == ENTER){
+				if(keyCode == "Enter"){
 					console.log(g.room.vars.actualInput)
 					g.room.vars.stringPos = 0
 					if(g.room.vars.actualInput.toLowerCase().replace(/\W/,"") === g.room.vars.overrideString.toLowerCase().replace(/\W/,"") ){
@@ -153,8 +158,8 @@ rooms = {
 	"room_4": {
 		desc: [
 		"You are in a meadow. There is a cliff above you",
-		"There are also some rocks on the ground.",
-		"But yeah, the main focus is the cliff."
+		"There are also some *rocks* on the ground.",
+		"But yeah, the main focus is the *cliff*."
 		],
 
 		cmds: [
@@ -256,13 +261,12 @@ rooms = {
 				tint(255,255)
 			}
 
-			image(girl, g.room.vars.girlX, g.room.vars.girlY)
+			term.drawImage(girl_falling_img, g.room.vars.girlX, g.room.vars.girlY)
 			if(!g.room.vars.save){
 				
 				g.room.vars.girlY += g.room.vars.fallingRate
-				if(canvas.measureText(term.input).width > g.room.vars.girlX && g.room.vars.girlY > (height - 140)){
+				if(term.input.length > 7 && g.room.vars.girlY > (180)){
 					g.room.vars.save = true
-					girl = girl_resting
 					term.keyPressedControlOverride = function(){
 						return true
 					}
@@ -302,7 +306,7 @@ rooms = {
 					}, 1500);
 					
 				}
-				else if(canvas.measureText(term.input).width <= g.room.vars.girlX && g.room.vars.girlY > (height + 50)){
+				else if(g.room.vars.girlY > 50){
 					term.clear()
 					term.drawOverride = null
 					if(g.room.vars.secondTime){
@@ -537,7 +541,7 @@ rooms = {
 
 			term.keyPressedControlOverride = function(keyCode,term,g){
 
-				if (keyCode == ENTER || keyCode == BACKSPACE) return true
+				if (keyCode == "Enter" || keyCode == "Backspace") return true
 				if (keyCode == 116) return false
 				g.room.vars.distanceClimbed+= 1
 				term.input = "|" + "*".repeat(g.room.vars.distanceClimbed) + " ".repeat(g.room.vars.cliffHeight - g.room.vars.distanceClimbed) + "|"
@@ -656,9 +660,6 @@ rooms = {
 						setTimeout(function(){
 							term.print("^I won't let you.^")
 							term.allowTyping = false
-							term.keyPressedControlOverride = function(){
-								return true
-							}
 							setTimeout(function(){
 								term.clear()
 								term.print("*The End.*")
@@ -722,9 +723,12 @@ rooms = {
 			},
 		],
 	},
-
-
 }
+
+//preload images
+var girl_falling_img = new Image()
+girl_falling_img.src = loadImage('game/sprites/girl_falling_lg.png')
+
 // I don't like having this level of vulgarity in my codebase, but it needs to be done.
 // This is if you make weird comments about the girl.
 

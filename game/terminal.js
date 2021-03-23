@@ -16,17 +16,19 @@ function setup() {
 	girl_resting = loadImage('game/sprites/girl_resting_lg2.png')
 	saveGirlBG = [loadImage('game/sprites/bg1.jpg'), loadImage('game/sprites/bg2.jpg'), loadImage('game/sprites/bg3.jpg')]
 	*/
-	term = new terminal(window.innerWidth,window.innerHeight)
+	term = new terminal(900,600)
 	// this is used to tie the input to the terminal object
+	ignores=["'", "/", "Backspace"]
 	addEventListener('keydown', function(event) {
-		if(event.key == "Backspace")
+		console.log(event.key)
+		if(ignores.includes(event.key))
 		event.preventDefault()
 		term.keyPressed(event)
 	}, false);
 	window.onresize = function(event) {
-		console.log("RESIZE")
-		console.log(window.innerWidth, window.innerHeight)
-		this.term.resize(window.innerWidth, window.innerHeight);
+		//console.log("RESIZE")
+		//console.log(window.innerWidth, window.innerHeight)
+		//this.term.resize(window.innerWidth, window.innerHeight);
 	};
 	g = new game()
 }
@@ -80,12 +82,13 @@ class terminal {
 	*/
 	
 	keyTyped(event){
+		if (!this.allowTyping) return
 		//when a letter/character is typed. just add it to the input string.
 		this.blinkState = 0
 		console.log("keyTyped")
 		if(this.keyTypedControlOverride != null){
 			// if the override returns true, don't process the key
-			var rt = this.keyTypedControlOverride(key, this, g)
+			var rt = this.keyTypedControlOverride(event.key, this, g)
 			if(rt){
 				this.draw()
 				return
@@ -97,13 +100,15 @@ class terminal {
 	}
 
 	keyPressed(event){
+		if(!this.allowTyping) return
 		//console.log(event)
 		//defer simple keypresses to the other function
 		if(event.key.length == 1) return this.keyTyped(event)
 		var keyCode = event.keyCode
 		console.log("keyPressed")
 		if(this.keyPressedControlOverride != null){
-			var rt = this.keyPressedControlOverride(keyCode, this, g)
+			console.log("KEYCODE", event.key)
+			var rt = this.keyPressedControlOverride(event.key, this, g)
 			// if the override returns true, don't process the key
 			if(rt){
 				this.draw()
@@ -192,6 +197,15 @@ class terminal {
 		(text) = blue/player text
 		_text_ = italic text
 		*/
+
+		//split lines at the newline character
+		if (text.includes("\n")){
+			text.split("\n").forEach((line)=>{
+				this.print(line)
+			})
+			return
+		}
+
 		var checker = [
 			{
 				tag: "*",
@@ -313,6 +327,10 @@ class terminal {
 			
 		}
 		this.drawTimeout = setTimeout(()=>this.draw(), this.framerate)
+	}
+	drawImage(img, x, y){
+		this.ctx.drawImage(img,x,y)
+
 	}
 }
 

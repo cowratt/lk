@@ -1,7 +1,7 @@
 class game{
 
 	constructor(){
-		this.room = rooms["room_1"]
+		this.room = rooms["room_4"]
 		this.player = {
 			name: "",
 			inventory: [],
@@ -160,7 +160,7 @@ class game{
 	addToInventory(item,term){
 		if(this.player.inventory.length === 0){
 			//this.player.inventory = []
-			term.print("Oh, by the way.. You can list your items with *inventory* or *i*")
+			term.print("Oh, by the way.. You can list your items with \n*inventory* or *i*")
 		}
 		this.player.inventory.push(item)
 	}

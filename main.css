@@ -11,6 +11,7 @@ canvas {
 body {
   margin: 0;
   display: flex;
+  background-color: #222;
 
   /* This centers our sketch horizontally. */
   justify-content: center;
