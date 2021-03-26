@@ -1,7 +1,7 @@
 class game{
 	globalData = {}
 	constructor(){
-		this.room = rooms["room_4"]
+		this.room = rooms["room_1"]
 		this.player = {
 			name: "",
 			inventory: [],
