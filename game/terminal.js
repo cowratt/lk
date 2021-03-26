@@ -44,7 +44,6 @@ class terminal {
 		
 
 		this.lineHeight = 35
-		this.blinkRate = 2
 		this.blinkState = 0
 		this.blink = true
 		this.flashState = 0
@@ -56,11 +55,12 @@ class terminal {
 		this.input = ""
 
 		this.allowTyping = true
+		this.drawPrevLines = true
 		this.drawOverride = null
 		this.keyTypedControlOverride = null
 		this.keyPressedControlOverride = null
 
-		this.framerate = 1000/2
+		this.framerate = 15
 		this.drawTimeout = 0
 
 		this.print("Welcome to lk.")
@@ -90,13 +90,16 @@ class terminal {
 			// if the override returns true, don't process the key
 			var rt = this.keyTypedControlOverride(event.key, this, g)
 			if(rt){
-				this.draw()
+				if (this.drawOverride == undefined){
+					this.draw()
+				}
 				return
 			}
 		}
 		this.input = [this.input.slice(0, this.cursorPos), event.key, this.input.slice(this.cursorPos)].join('');
 		this.cursorPos += 1
-		this.draw()
+		if (this.drawOverride == undefined)
+			this.draw()
 	}
 
 	keyPressed(event){
@@ -111,7 +114,8 @@ class terminal {
 			var rt = this.keyPressedControlOverride(event.key, this, g)
 			// if the override returns true, don't process the key
 			if(rt){
-				this.draw()
+				if (this.drawOverride == undefined)
+					this.draw()
 				return
 			}
 		}
@@ -164,7 +168,8 @@ class terminal {
 		else if (event.key == "Tab"){
 			//something
 		}
-		this.draw()
+		if (this.drawOverride == undefined)
+			this.draw()
 	}
 
 
@@ -287,15 +292,16 @@ class terminal {
 	}
 	draw(){
 		clearTimeout(this.drawTimeout)
-		if(this.drawOverride != null){
-			var rt = this.drawOverride(this,g)
-			if(rt) return
-		}
+		this.drawTimeout = setTimeout(()=>this.draw(), 1000/this.framerate)
 		if(this.flashState > 0){
 			this.background(60)
 		}
 		else {
 			this.background("#000")
+		}
+		if(this.drawOverride != null){
+			var rt = this.drawOverride(this,g)
+			if(rt) return
 		}
 		
 
@@ -305,8 +311,8 @@ class terminal {
 			this.ctx.fillText(">" + this.input,20, this.canvas.height - this.lineHeight)
 			//draw blink
 			this.blinkState++
-			if (this.blinkState > this.blinkRate) this.blinkState = 0
-			if(this.blinkState < this.blinkRate /2 && this.blink){
+			if (this.blinkState > this.framerate) this.blinkState = 0
+			if(this.blinkState < this.framerate /2 && this.blink){
 				//calc cursor pos
 				var keyWidth = 16
 				var cursorOffset = this.cursorPos * keyWidth + 47
@@ -316,17 +322,18 @@ class terminal {
 
 
 		//draw prev lines
-		for (var i = 0; i < this.lines.length; i++){
-
-			if(typeof(this.lines[i]) !== 'string'){
-				fillMixedText(this.ctx, this.lines[i], 20, this.canvas.height - this.lineHeight*(i+2.5))
+		if (this.drawPrevLines){
+			for (var i = 0; i < this.lines.length; i++){
+	
+				if(typeof(this.lines[i]) !== 'string'){
+					fillMixedText(this.ctx, this.lines[i], 20, this.canvas.height - this.lineHeight*(i+2.5))
+				}
+				else{
+					this.ctx.fillText(this.lines[i],20, this.canvas.height - this.lineHeight*(i+2.5))
+				}
+				
 			}
-			else{
-				this.ctx.fillText(this.lines[i],20, this.canvas.height - this.lineHeight*(i+2.5))
-			}
-			
 		}
-		this.drawTimeout = setTimeout(()=>this.draw(), this.framerate)
 	}
 	drawImage(img, x, y){
 		this.ctx.drawImage(img,x,y)

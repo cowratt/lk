@@ -1,5 +1,5 @@
 class game{
-
+	globalData = {}
 	constructor(){
 		this.room = rooms["room_4"]
 		this.player = {
