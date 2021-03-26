@@ -330,7 +330,7 @@ rooms = {
 			term.keyPressedControlOverride = null
 			term.keyTypedControlOverride = null
 			term.input = ""
-			erm.cursorPos = 0
+			term.cursorPos = 0
 
 			var mergeDict = g.room.dropped_girl_data
 
@@ -686,7 +686,7 @@ rooms = {
 
 //preload images
 var girl_falling_img = new Image()
-girl_falling_img.src = '/game/sprites/girl_falling_lg.png'
+girl_falling_img.src = 'game/sprites/girl_falling_lg.png'
 // I don't like having this level of vulgarity in my codebase, but it needs to be done.
 // This is if you make weird comments about the girl.
 
